@@ -37,7 +37,7 @@ public class TestArmSubsystem extends SubsystemBase {
   }
 
   public void stopMotor() {
-    m_testArm.set(0);
+    m_testArm.set(0); 
   }
 
   @Override
