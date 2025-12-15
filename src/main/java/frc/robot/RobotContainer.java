@@ -5,28 +5,18 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.OIConstants;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.TestArmSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import java.util.List;
+import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.TestArmSubsystem;
+// Old DriveSubsystem (WPILib-based, no vision) - REPLACED BY YAGSL
+// import frc.robot.subsystems.drive.DriveSubsystem;
+// YAGSL + Vision subsystems
+import frc.robot.subsystems.drive.YAGSLDriveSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -36,11 +26,37 @@ import java.util.List;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive;
-  private final TestArmSubsystem m_testArm;
+  // NOTE: Only ONE drive subsystem should be active at a time (they control the same hardware)
 
-    private NetworkTableInstance inst;
-    private NetworkTable driveTable;
+  // Old DriveSubsystem (WPILib-based, no vision) - REPLACED BY YAGSL
+  // private final DriveSubsystem m_robotDrive;
+
+  // YAGSL + Vision subsystems
+  // Current: Single Limelight configuration
+  private final VisionSubsystem m_visionSubsystem;
+  private final YAGSLDriveSubsystem m_robotDrive;
+
+  // Alternative: Multiple Limelights for redundancy/wider coverage (uncomment and modify as needed)
+  //
+  // Two Limelights (front and back):
+  // private final VisionSubsystem m_visionFront;
+  // private final VisionSubsystem m_visionBack;
+  // private final YAGSLDriveSubsystem m_robotDrive;
+  //
+  // Three Limelights (front, left, right):
+  // private final VisionSubsystem m_visionFront;
+  // private final VisionSubsystem m_visionLeft;
+  // private final VisionSubsystem m_visionRight;
+  // private final YAGSLDriveSubsystem m_robotDrive;
+  //
+  // Four Limelights (front, back, left, right):
+  // private final VisionSubsystem m_visionFront;
+  // private final VisionSubsystem m_visionBack;
+  // private final VisionSubsystem m_visionLeft;
+  // private final VisionSubsystem m_visionRight;
+  // private final YAGSLDriveSubsystem m_robotDrive;
+
+  private final TestArmSubsystem m_testArm;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -49,17 +65,39 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    m_robotDrive = new DriveSubsystem();
+    // Initialize drive subsystem
+    // Old: WPILib-based DriveSubsystem (REPLACED BY YAGSL)
+    // m_robotDrive = new DriveSubsystem();
+
+    // YAGSL + Vision initialization
+    // Current: Single Limelight configuration
+    m_visionSubsystem = new VisionSubsystem("limelight");
+    m_robotDrive = new YAGSLDriveSubsystem(m_visionSubsystem);
+
+    // Alternative: Multiple Limelights for redundancy/wider coverage (uncomment and modify as needed)
+    //
+    // Two Limelights (front and back):
+    // m_visionFront = new VisionSubsystem("limelight-front");
+    // m_visionBack = new VisionSubsystem("limelight-back");
+    // m_robotDrive = new YAGSLDriveSubsystem(m_visionFront, m_visionBack);
+    //
+    // Three Limelights (front, left, right):
+    // m_visionFront = new VisionSubsystem("limelight-front");
+    // m_visionLeft = new VisionSubsystem("limelight-left");
+    // m_visionRight = new VisionSubsystem("limelight-right");
+    // m_robotDrive = new YAGSLDriveSubsystem(m_visionFront, m_visionLeft, m_visionRight);
+    //
+    // Four Limelights (front, back, left, right):
+    // m_visionFront = new VisionSubsystem("limelight-front");
+    // m_visionBack = new VisionSubsystem("limelight-back");
+    // m_visionLeft = new VisionSubsystem("limelight-left");
+    // m_visionRight = new VisionSubsystem("limelight-right");
+    // m_robotDrive = new YAGSLDriveSubsystem(m_visionFront, m_visionBack, m_visionLeft, m_visionRight);
+
     m_testArm = new TestArmSubsystem();
 
     // Configure the button bindings
     configureButtonBindings();
-
-    // Get the default NetworkTable instance (server on robot)
-    inst = NetworkTableInstance.getDefault();
-
-    // Get or create a table named "datatable"
-    driveTable = inst.getTable("drivetable");
 
     // Configure default commands - joystick control
     m_robotDrive.setDefaultCommand(
@@ -74,7 +112,7 @@ public class RobotContainer {
             m_robotDrive));
 
     if (m_driverController.getStartButton()) {
-        m_robotDrive.zeroHeading();
+        m_robotDrive.zeroGyro();
     }
   }
 
@@ -95,7 +133,7 @@ public class RobotContainer {
 
     new JoystickButton(m_driverController, Button.kStart.value)
         .whileTrue(new RunCommand(
-            () -> m_robotDrive.zeroHeading(),
+            () -> m_robotDrive.zeroGyro(),
             m_robotDrive)); 
             
     new JoystickButton(m_driverController, Button.kA.value)
@@ -121,6 +159,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    // NOTE: The gyro is zeroed in YAGSLDriveSubsystem's constructor, assuming
+    // the robot starts facing X+ for Blue alliance (X- for Red alliance).
+    // If you need to reset the pose to a specific location, use:
+    // m_robotDrive.resetOdometry(new Pose2d(x, y, rotation));
+
     return new RunCommand(() -> {
     });
   }

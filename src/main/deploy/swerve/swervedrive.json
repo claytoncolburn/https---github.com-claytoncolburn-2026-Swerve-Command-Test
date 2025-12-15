@@ -1,0 +1,27 @@
+{
+  "modules": [
+    "frontleft.json",
+    "frontright.json",
+    "backleft.json",
+    "backright.json"
+  ],
+  "imu": {
+    "type": "navx_spi",
+    "id": 0,
+    "canbus": null
+  },
+  "invertedIMU": false,
+  "maxSpeed": 4.8,
+  "optimalVoltage": 12.0,
+  "deadbandSteer": 0.01,
+  "headingCorrectionDrift": 0.0,
+  "headingCorrectionPID": {
+    "p": 0.01,
+    "i": 0.0,
+    "d": 0.0
+  },
+  "centerOfRotation": {
+    "x": 0.0,
+    "y": 0.0
+  }
+}
