@@ -1,0 +1,17 @@
+{
+  "mass": 54.43,
+  "MOI": 6.0,
+  "wheelbase": 0.5207,
+  "trackWidth": 0.5207,
+  "wheelRadius": 0.0508,
+  "maxVelocity": 4.8,
+  "maxAcceleration": 3.0,
+  "maxAngularVelocity": 9.42,
+  "maxAngularAcceleration": 12.56,
+  "moduleConfig": {
+    "wheelCOF": 1.19,
+    "driveMotor": "neo_vortex",
+    "driveCurrentLimit": 50,
+    "slipCurrent": 80
+  }
+}

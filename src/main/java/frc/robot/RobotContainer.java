@@ -17,6 +17,7 @@ import frc.robot.subsystems.TestArmSubsystem;
 // YAGSL + Vision subsystems
 import frc.robot.subsystems.drive.YAGSLDriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import swervelib.SwerveInputStream;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -99,17 +100,8 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
 
-    // Configure default commands - joystick control
-    m_robotDrive.setDefaultCommand(
-        // The left stick controls translation of the robot.
-        // Turning is controlled by the X axis of the right stick.
-        new RunCommand(
-            () -> m_robotDrive.drive(
-                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-                true),
-            m_robotDrive));
+    // Set initial default command for teleop
+    setTeleopModeDefaultCommand();
 
     if (m_driverController.getStartButton()) {
         m_robotDrive.zeroGyro();
@@ -159,12 +151,64 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // NOTE: The gyro is zeroed in YAGSLDriveSubsystem's constructor, assuming
-    // the robot starts facing X+ for Blue alliance (X- for Red alliance).
-    // If you need to reset the pose to a specific location, use:
+    // NOTE: All poses use blue origin coordinates (field origin at blue alliance corner).
+    // PathPlanner automatically mirrors paths for red alliance.
+    // The gyro will be zeroed in autonomousInit() using zeroGyroWithAlliance().
+    //
+    // If you need to reset the pose to a specific location:
     // m_robotDrive.resetOdometry(new Pose2d(x, y, rotation));
 
     return new RunCommand(() -> {
     });
+  }
+
+  /**
+   * Configures the default command for teleop mode.
+   * Uses YAGSL's SwerveInputStream with alliance-relative control for automatic
+   * coordinate flipping on red alliance.
+   *
+   * Alliance-relative control ensures that "forward" on the joystick always means
+   * "away from our alliance wall" regardless of which alliance we're on.
+   */
+  public void setTeleopModeDefaultCommand() {
+    // Create alliance-aware field-relative drive input stream
+    // SwerveInputStream handles alliance-based coordinate flipping automatically
+    SwerveInputStream driveInputStream = SwerveInputStream.of(
+        m_robotDrive.getSwerveDrive(),
+        () -> -m_driverController.getLeftY(),  // Forward/backward (inverted for controller convention)
+        () -> -m_driverController.getLeftX())  // Left/right (inverted for controller convention)
+      .withControllerRotationAxis(() -> -m_driverController.getRightX())  // Rotation
+      .deadband(OIConstants.kDriveDeadband)
+      .allianceRelativeControl(true);  // Enable automatic alliance-based coordinate flipping
+
+    // Convert to command and set as default
+    m_robotDrive.setDefaultCommand(
+        new RunCommand(
+            () -> m_robotDrive.getSwerveDrive().drive(driveInputStream.get()),
+            m_robotDrive
+        )
+    );
+  }
+
+  /**
+   * Configures the default command for test mode.
+   * Return-to-home behavior with automatic pathfinding.
+   */
+  public void setTestModeDefaultCommand() {
+    m_robotDrive.setDefaultCommand(
+        m_robotDrive.returnToHomeCommand(
+            () -> -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+            () -> -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+            () -> -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband)
+        )
+    );
+  }
+
+  /**
+   * Zeros the gyroscope. Should be called when robot is facing red alliance wall.
+   * Required for proper odometry initialization in autonomous mode.
+   */
+  public void zeroGyro() {
+    m_robotDrive.zeroGyro();
   }
 }

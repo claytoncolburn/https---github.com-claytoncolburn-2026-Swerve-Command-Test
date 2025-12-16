@@ -80,11 +80,19 @@ public class VisionSubsystem extends SubsystemBase {
     /**
      * Gets the current robot pose estimate from Limelight MegaTag2.
      *
+     * Note: getAlliancePoseEstimate() returns poses in blue origin coordinates by default
+     * when the AprilTag field layout is configured properly. The method name is slightly
+     * misleading - it queries the alliance-specific tag layout but returns blue origin poses.
+     *
+     * Blue origin convention: Field origin (0,0) is at blue alliance corner,
+     * X+ points toward red alliance wall. PathPlanner and SwerveInputStream
+     * handle alliance-based coordinate flipping for driver input and paths.
+     *
      * @return Optional containing PoseEstimate if valid tags are visible, empty otherwise
      */
     public Optional<PoseEstimate> getPoseEstimate() {
-        // Use Blue alliance MegaTag2 by default
-        // Note: This should be swapped based on alliance color in a real implementation
+        // Returns pose in blue origin coordinates (not alliance-relative)
+        // Alliance-specific handling is done by PathPlanner and SwerveInputStream
         return estimator.getAlliancePoseEstimate();
     }
 
