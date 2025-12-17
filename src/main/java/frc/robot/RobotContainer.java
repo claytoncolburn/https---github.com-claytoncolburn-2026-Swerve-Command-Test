@@ -72,7 +72,7 @@ public class RobotContainer {
 
     // YAGSL + Vision initialization
     // Current: Single Limelight configuration
-    m_visionSubsystem = new VisionSubsystem("limelight");
+    m_visionSubsystem = new VisionSubsystem("limelight-left");
     m_robotDrive = new YAGSLDriveSubsystem(m_visionSubsystem);
 
     // Alternative: Multiple Limelights for redundancy/wider coverage (uncomment and modify as needed)
