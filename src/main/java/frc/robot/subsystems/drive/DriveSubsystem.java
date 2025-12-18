@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.drive;
 
-import com.kauailabs.navx.frc.AHRS;
+
+
+import com.studica.frc.AHRS;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -48,7 +50,7 @@ public class DriveSubsystem extends SubsystemBase {
         DriveConstants.kFrontRightChassisAngularOffset);
 
   // The gyro sensor
-  private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);
+  private final AHRS m_gyro = new AHRS();
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
