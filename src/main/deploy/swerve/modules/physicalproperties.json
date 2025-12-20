@@ -1,39 +1,20 @@
 {
-  "conversionFactors": {
-    "drive": {
-      "factor": 0.047184,
-      "gearRatio": 6.75
+    "conversionFactors": {
+        "drive": {
+            "diameter": 4,
+            "gearRatio": 6.75
+        },
+        "angle": {
+            "gearRatio": 21.4285714286
+        }
     },
-    "angle": {
-      "factor": 16.8,
-      "gearRatio": 21.42857
+    "optimalVoltage": 12.0,
+    "currentLimit": {
+        "drive": 50,
+        "angle": 40
+    },
+    "rampRate": {
+        "drive": 0.3,
+        "angle": 0.25
     }
-  },
-  "wheelGripCoefficientOfFriction": 1.19,
-  "optimalVoltage": 12.0,
-  "currentLimit": {
-    "drive": 50,
-    "angle": 40
-  },
-  "rampRate": {
-    "drive": 0.25,
-    "angle": 0.25
-  },
-  "wheelDiameter": 4.0,
-  "mass": {
-    "value": 54.43,
-    "unit": "kg"
-  },
-  "supportedMotors": {
-    "drive": "sparkflex_neo_vortex",
-    "angle": "sparkmax_neo"
-  },
-  "angleMotorFreeSpeed": {
-    "value": 5676,
-    "unit": "RPM"
-  },
-  "driveMotorFreeSpeed": {
-    "value": 6784,
-    "unit": "RPM"
-  }
 }

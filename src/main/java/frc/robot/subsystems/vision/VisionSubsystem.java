@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import java.util.Optional;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
@@ -26,14 +27,14 @@ import limelight.networktables.PoseEstimate;
  * not to run autonomously in periodic(). It provides pose estimates and calculates appropriate
  * standard deviations based on tag count and distance for robust vision fusion.
  */
+@Logged
 public class VisionSubsystem extends SubsystemBase {
     private final Limelight limelight;
     private final LimelightPoseEstimator estimator;
 
     // Vision confidence thresholds
     private static final double MULTI_TAG_CLOSE_STD_DEV = 0.01;  // meters (very confident)
-    private static final double SINGLE_TAG_BASE_STD_DEV = 0.5;   // meters (less confident)
-    private static final double MAX_DISTANCE_FOR_VISION = 6.0;   // meters (reject beyond this)
+    private static final double SINGLE_TAG_BASE_STD_DEV = 0.5; // meters (less confident)
 
     /**
      * Creates a new VisionSubsystem.
@@ -108,12 +109,6 @@ public class VisionSubsystem extends SubsystemBase {
      * @return Matrix<N3, N1> containing [x_stddev, y_stddev, theta_stddev]
      */
     public Matrix<N3, N1> getStandardDeviations(PoseEstimate estimate) {
-        // Reject measurements that are too far away or invalid
-        if (estimate.avgTagDist > MAX_DISTANCE_FOR_VISION) {
-            // Return very high standard deviations (essentially reject this measurement)
-            return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-        }
-
         double xyStdDev;
 
         if (estimate.tagCount >= 2) {
@@ -127,7 +122,7 @@ public class VisionSubsystem extends SubsystemBase {
 
         // Always use infinite rotation standard deviation - gyro is authoritative
         // This prevents vision from fighting the gyro on heading
-        return VecBuilder.fill(xyStdDev, xyStdDev, Double.MAX_VALUE);
+        return VecBuilder.fill(xyStdDev, xyStdDev, xyStdDev);
     }
 
     /**
